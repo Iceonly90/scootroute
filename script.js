@@ -164,7 +164,6 @@ async function fetchRoute(from, to){
     options: {
       avoid_features: [
         "highways",     // Autobahn
-        "trunk",        // Schnellstraße
         "motorroad",    // Kraftfahrstraße
         "ferry",
         "tollways",
