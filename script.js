@@ -167,7 +167,6 @@ async function fetchRoute(from, to){
         "ferries",
         "tollways",
         "steps",
-        "unpavedroads",
       ]
     }
   };
