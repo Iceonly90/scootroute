@@ -154,31 +154,43 @@ function showMarkers(from, to){
 }
 
 // ========= ORS Fetch (mit Filtern für Roller) =========
-async function fetchRoute(from, to){
-  const body = {
-    coordinates: [from, to],           // [ [lon,lat], [lon,lat] ]
-    instructions: true,
-    language: "de",
-    preference: "fastest",
-    // harte Ausschlüsse:
-    options: {
-      avoid_features: [
-        "highways",     // Autobahn
-        "ferries",
-        "tollways",
-      ]
+async function getRoute(startCoords, endCoords) {
+    const apiKey = 'bd54525c361447cfa75aea95f906a41a'; // <-- hier deinen Key einsetzen
+    const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
+
+    const body = {
+        coordinates: [
+            [startCoords.lng, startCoords.lat],
+            [endCoords.lng, endCoords.lat]
+        ]
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': apiKey
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`API-Fehler: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.features || data.features.length === 0) {
+            throw new Error("Keine Route gefunden.");
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Routing-Fehler:", error);
+        alert("Route fehlgeschlagen: " + error.message);
     }
-  };
-
-  const res = await fetch(ORS_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': ORS_API_KEY,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-
+}
   const text = await res.text();
   if(!res.ok){
     throw new Error(`Routing fehlgeschlagen (${res.status}): ${text}`);
