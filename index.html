@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ScootRoute Demo</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
   <header>
     <div class="brand">ScootRoute</div>
   </header>
+
   <main id="app">
     <div id="controls">
       <div class="input-group">
@@ -19,13 +19,16 @@
         <button id="btn-mypos" title="Mein Standort">Mein Standort</button>
         <div id="suggest-from" class="suggestions hidden"></div>
       </div>
+
       <div class="input-group">
         <input id="input-to" placeholder="Ziel (z. B. John Reed Düsseldorf Hamm)" autocomplete="off">
         <div id="suggest-to" class="suggestions hidden"></div>
       </div>
+
       <button id="btn-route">Route berechnen</button>
       <button id="btn-clear">Löschen</button>
     </div>
+
     <div id="map"></div>
     <div id="info" class="hidden"></div>
   </main>
