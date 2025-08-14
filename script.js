@@ -166,7 +166,6 @@ async function fetchRoute(from, to){
         "highways",     // Autobahn
         "ferries",
         "tollways",
-        "steps",
       ]
     }
   };
