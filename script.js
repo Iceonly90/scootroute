@@ -164,15 +164,10 @@ async function fetchRoute(from, to){
     options: {
       avoid_features: [
         "highways",     // Autobahn
-        "motorroad",    // Kraftfahrstraße
         "ferry",
         "tollways",
         "steps",
-        "track",
-        "path",
-        "footway",
-        "cycleway",
-        "bridleway"
+        "unpavedroads",
       ]
     }
   };
