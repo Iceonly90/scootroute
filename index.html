@@ -2,39 +2,42 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Roller Routing</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roller-Routenplaner</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #map { height: 90vh; width: 100%; }
-        #controls {
-            padding: 10px;
-            background: #f8f8f8;
-            display: flex;
-            gap: 10px;
+        html, body {
+            height: 100%;
+            margin: 0;
         }
-        button {
-            padding: 8px 12px;
-            border: none;
-            background-color: #0078d7;
-            color: white;
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        /* Damit die Autocomplete-Box später Platz hat */
+        .autocomplete-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 2000;
+        }
+        .autocomplete-suggestion {
+            padding: 5px;
             cursor: pointer;
-            border-radius: 4px;
         }
-        button:hover {
-            background-color: #005a9e;
+        .autocomplete-suggestion:hover {
+            background: #eee;
         }
     </style>
 </head>
 <body>
-    <div id="controls">
-        <button id="btnMyLocation">Mein Standort</button>
-        <button id="btnRoute">Route berechnen</button>
-    </div>
+
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@mapbox/polyline"></script>
     <script src="script.js"></script>
 </body>
 </html>
