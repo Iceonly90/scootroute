@@ -3,41 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roller-Routenplaner</title>
+    <title>ScootRoute</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        html, body {
-            height: 100%;
+        body {
             margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-        #map {
-            height: 100%;
-            width: 100%;
+        .controls {
+            background: #f5f5f5;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1000;
         }
-        /* Damit die Autocomplete-Box später Platz hat */
-        .autocomplete-suggestions {
-            position: absolute;
-            background: white;
+        .controls input {
+            padding: 5px;
+            margin: 5px 0;
+            width: calc(100% - 12px);
+            box-sizing: border-box;
+        }
+        .controls button {
+            padding: 5px 10px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        .suggestions {
             border: 1px solid #ccc;
-            max-height: 200px;
-            overflow-y: auto;
+            background: white;
+            position: absolute;
             z-index: 2000;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
         }
-        .autocomplete-suggestion {
+        .suggestion-item {
             padding: 5px;
             cursor: pointer;
         }
-        .autocomplete-suggestion:hover {
+        .suggestion-item:hover {
             background: #eee;
+        }
+        #map {
+            flex: 1;
         }
     </style>
 </head>
 <body>
 
-    <div id="map"></div>
+<div class="controls">
+    <div>
+        <input id="start" type="text" placeholder="Startadresse eingeben">
+        <button id="myLocation">Mein Standort</button>
+        <div id="start-suggestions" class="suggestions"></div>
+    </div>
+    <div>
+        <input id="end" type="text" placeholder="Zieladresse eingeben">
+        <div id="end-suggestions" class="suggestions"></div>
+    </div>
+    <button id="routeBtn">Route berechnen</button>
+</div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/@mapbox/polyline"></script>
-    <script src="script.js"></script>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
