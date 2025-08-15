@@ -1,109 +1,122 @@
-// === OpenStreetMap + Leaflet Karte ===
-const map = L.map('map').setView([51.2277, 6.7735], 13); // Start Düsseldorf
+// === API Key ===
+const ORS_API_KEY = "5b3ce3597851110001cf6248";
+
+// === Karte initialisieren ===
+const map = L.map('map').setView([51.2277, 6.7735], 13); // Düsseldorf
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap-Mitwirkende'
+    attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
 let startMarker, endMarker, routeLayer;
 
-// === Mein Standort ===
-document.getElementById('btnMyLocation').addEventListener('click', () => {
-    if (!navigator.geolocation) {
-        alert("Geolocation wird nicht unterstützt.");
-        return;
-    }
+// === HTML-Elemente dynamisch erstellen ===
+const controls = document.createElement('div');
+controls.style.position = 'absolute';
+controls.style.top = '10px';
+controls.style.left = '50%';
+controls.style.transform = 'translateX(-50%)';
+controls.style.backgroundColor = 'white';
+controls.style.padding = '10px';
+controls.style.borderRadius = '8px';
+controls.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+controls.style.zIndex = 1000;
+controls.innerHTML = `
+  <input id="start" type="text" placeholder="Start" style="width:200px; margin:3px;">
+  <input id="end" type="text" placeholder="Ziel" style="width:200px; margin:3px;">
+  <button id="locateBtn">Mein Standort</button>
+  <button id="routeBtn">Route berechnen</button>
+`;
+document.body.appendChild(controls);
 
-    navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setStartPoint(lat, lng);
-        map.setView([lat, lng], 14);
-    }, err => {
-        alert("Standort nicht verfügbar: " + err.message);
+// === Autocomplete Funktion ===
+async function autocomplete(inputId) {
+    const input = document.getElementById(inputId);
+    input.addEventListener("input", async () => {
+        const query = input.value;
+        if (query.length < 3) return;
+
+        const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}&boundary.country=DE`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // Vorschläge anzeigen (einfach in Konsole oder später als Dropdown)
+        console.log("Vorschläge für", inputId, data.features.map(f => f.properties.label));
     });
+}
+autocomplete("start");
+autocomplete("end");
+
+// === Standort holen ===
+document.getElementById("locateBtn").addEventListener("click", () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            document.getElementById("start").value = `${lat},${lon}`;
+            if (startMarker) map.removeLayer(startMarker);
+            startMarker = L.marker([lat, lon]).addTo(map).bindPopup("Mein Standort").openPopup();
+            map.setView([lat, lon], 14);
+        }, () => alert("Standort nicht verfügbar"));
+    } else {
+        alert("Geolocation wird nicht unterstützt");
+    }
 });
-
-// === Startpunkt setzen ===
-function setStartPoint(lat, lng) {
-    if (startMarker) {
-        startMarker.setLatLng([lat, lng]);
-    } else {
-        startMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
-    }
-}
-
-// === Zielpunkt setzen ===
-function setEndPoint(lat, lng) {
-    if (endMarker) {
-        endMarker.setLatLng([lat, lng]);
-    } else {
-        endMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
-    }
-}
 
 // === Route berechnen ===
-async function getRoute(startCoords, endCoords) {
-    const apiKey = '5b3ce3597851110001cf6248'; // HIER einfügen!
-    const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
-
-    const body = {
-        coordinates: [
-            [startCoords.lng, startCoords.lat],
-            [endCoords.lng, endCoords.lat]
-        ],
-        // Option: keine Autobahnen
-        extra_info: [],
-        options: {
-            avoid_features: ["highways", "tollways", "ferries"]
-        }
-    };
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': apiKey
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) throw new Error(`API-Fehler: ${response.statusText}`);
-
-        const data = await response.json();
-
-        if (!data.features || data.features.length === 0) throw new Error("Keine Route gefunden.");
-
-        if (routeLayer) map.removeLayer(routeLayer);
-
-        routeLayer = L.geoJSON(data, {
-            style: { color: 'blue', weight: 4 }
-        }).addTo(map);
-
-        map.fitBounds(routeLayer.getBounds());
-
-    } catch (error) {
-        alert("Route fehlgeschlagen: " + error.message);
-    }
-}
-
-// === Button-Event für Route ===
-document.getElementById('btnRoute').addEventListener('click', () => {
-    if (!startMarker || !endMarker) {
-        alert("Bitte Start- und Zielpunkt setzen.");
+document.getElementById("routeBtn").addEventListener("click", async () => {
+    const startVal = document.getElementById("start").value;
+    const endVal = document.getElementById("end").value;
+    if (!startVal || !endVal) {
+        alert("Bitte Start- und Zieladresse eingeben");
         return;
     }
-    const startCoords = startMarker.getLatLng();
-    const endCoords = endMarker.getLatLng();
-    getRoute({ lat: startCoords.lat, lng: startCoords.lng }, { lat: endCoords.lat, lng: endCoords.lng });
+
+    const startCoords = await geocode(startVal);
+    const endCoords = await geocode(endVal);
+    if (!startCoords || !endCoords) {
+        alert("Start oder Ziel konnte nicht gefunden werden");
+        return;
+    }
+
+    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${ORS_API_KEY}`;
+    const body = {
+        coordinates: [
+            [startCoords[1], startCoords[0]],
+            [endCoords[1], endCoords[0]]
+        ],
+        options: { avoid_features: ["motorway"] }
+    };
+
+    const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
+        alert("Route fehlgeschlagen");
+        return;
+    }
+
+    const coords = L.Polyline.fromEncoded(data.routes[0].geometry).getLatLngs();
+    if (routeLayer) map.removeLayer(routeLayer);
+    routeLayer = L.polyline(coords, { color: "blue" }).addTo(map);
+    map.fitBounds(routeLayer.getBounds());
 });
 
-// === Klick auf Karte ===
-map.on('click', e => {
-    if (!startMarker) {
-        setStartPoint(e.latlng.lat, e.latlng.lng);
-    } else if (!endMarker) {
-        setEndPoint(e.latlng.lat, e.latlng.lng);
+// === Geocoding Helper ===
+async function geocode(query) {
+    if (query.includes(",")) {
+        const parts = query.split(",");
+        return [parseFloat(parts[0]), parseFloat(parts[1])];
     }
-});
+    const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.features && data.features.length > 0) {
+        return [data.features[0].geometry.coordinates[1], data.features[0].geometry.coordinates[0]];
+    }
+    return null;
+}
