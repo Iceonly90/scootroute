@@ -1,39 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ScootRoute Demo</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <meta charset="UTF-8">
+    <title>Roller Routing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #map { height: 90vh; width: 100%; }
+        #controls {
+            padding: 10px;
+            background: #f8f8f8;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #0078d7;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="brand">ScootRoute</div>
-  </header>
-
-  <main id="app">
     <div id="controls">
-      <div class="input-group">
-        <input id="input-from" placeholder="Start (z. B. Bahnhof Bilk)" autocomplete="off">
-        <button id="btn-mypos" title="Mein Standort">Mein Standort</button>
-        <div id="suggest-from" class="suggestions hidden"></div>
-      </div>
-
-      <div class="input-group">
-        <input id="input-to" placeholder="Ziel (z. B. John Reed Düsseldorf Hamm)" autocomplete="off">
-        <div id="suggest-to" class="suggestions hidden"></div>
-      </div>
-
-      <button id="btn-route">Route berechnen</button>
-      <button id="btn-clear">Löschen</button>
+        <button id="btnMyLocation">Mein Standort</button>
+        <button id="btnRoute">Route berechnen</button>
     </div>
-
     <div id="map"></div>
-    <div id="info" class="hidden"></div>
-  </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="script.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

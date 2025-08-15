@@ -1,17 +1,16 @@
 // === OpenStreetMap + Leaflet Karte ===
-const map = L.map('map').setView([51.2277, 6.7735], 13); // Startansicht Düsseldorf
+const map = L.map('map').setView([51.2277, 6.7735], 13); // Start Düsseldorf
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap-Mitwirkende'
 }).addTo(map);
 
-// === Marker-Variablen ===
 let startMarker, endMarker, routeLayer;
 
-// === Aktuellen Standort ermitteln ===
+// === Mein Standort ===
 document.getElementById('btnMyLocation').addEventListener('click', () => {
     if (!navigator.geolocation) {
-        alert("Geolocation wird von deinem Browser nicht unterstützt.");
+        alert("Geolocation wird nicht unterstützt.");
         return;
     }
 
@@ -45,14 +44,19 @@ function setEndPoint(lat, lng) {
 
 // === Route berechnen ===
 async function getRoute(startCoords, endCoords) {
-    const apiKey = 'DEIN_ORS_API_KEY'; // HIER deinen API Key eintragen
+    const apiKey = '5b3ce3597851110001cf6248'; // HIER einfügen!
     const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
 
     const body = {
         coordinates: [
             [startCoords.lng, startCoords.lat],
             [endCoords.lng, endCoords.lat]
-        ]
+        ],
+        // Option: keine Autobahnen
+        extra_info: [],
+        options: {
+            avoid_features: ["highways", "tollways", "ferries"]
+        }
     };
 
     try {
@@ -71,12 +75,8 @@ async function getRoute(startCoords, endCoords) {
 
         if (!data.features || data.features.length === 0) throw new Error("Keine Route gefunden.");
 
-        // Vorherige Route entfernen
-        if (routeLayer) {
-            map.removeLayer(routeLayer);
-        }
+        if (routeLayer) map.removeLayer(routeLayer);
 
-        // Route zeichnen
         routeLayer = L.geoJSON(data, {
             style: { color: 'blue', weight: 4 }
         }).addTo(map);
@@ -84,12 +84,11 @@ async function getRoute(startCoords, endCoords) {
         map.fitBounds(routeLayer.getBounds());
 
     } catch (error) {
-        console.error("Routing-Fehler:", error);
         alert("Route fehlgeschlagen: " + error.message);
     }
 }
 
-// === Button-Event für Routensuche ===
+// === Button-Event für Route ===
 document.getElementById('btnRoute').addEventListener('click', () => {
     if (!startMarker || !endMarker) {
         alert("Bitte Start- und Zielpunkt setzen.");
@@ -100,7 +99,7 @@ document.getElementById('btnRoute').addEventListener('click', () => {
     getRoute({ lat: startCoords.lat, lng: startCoords.lng }, { lat: endCoords.lat, lng: endCoords.lng });
 });
 
-// === Karte-Klick zum Ziel setzen ===
+// === Klick auf Karte ===
 map.on('click', e => {
     if (!startMarker) {
         setStartPoint(e.latlng.lat, e.latlng.lng);
