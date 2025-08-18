@@ -1,3 +1,5 @@
+const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImJkNTQ1MjVjMzYxNDQ3Y2ZhNzVhZWE5NWY5MDZhNDFhIiwiaCI6Im11cm11cjY0In0="; // <-- deinen kompletten ORS-Key einfügen
+
 async function calculateRoute() {
   try {
     // Test: feste Koordinaten für Düsseldorf
