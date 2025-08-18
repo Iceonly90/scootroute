@@ -1,91 +1,79 @@
-// === API KEYS EINTRAGEN ===
-const ORS_API_KEY = "5b3ce3597851110001cf6248"; // dein ORS Key
+const apiKey = "5b3ce3597851110001cf6248"; // <-- deinen ORS Key hier einfügen
+let map = L.map("map").setView([51.2277, 6.7735], 13);
 
-// === Karte initialisieren ===
-const map = L.map("map").setView([51.2277, 6.7735], 13); // Düsseldorf
+// Hintergrundkarte (OpenStreetMap)
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap"
+  attribution: "© OpenStreetMap-Mitwirkende"
 }).addTo(map);
 
-let startCoords = null;
-let zielCoords = null;
-let routeLayer = null;
+let routeLayer;
 
-// === Geocoding Funktion ===
-async function geocode(query) {
-  const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.features && data.features.length > 0) {
-    const [lon, lat] = data.features[0].geometry.coordinates;
-    return { lat, lon };
-  }
-  throw new Error("Adresse nicht gefunden: " + query);
+// Adresse in Koordinaten umwandeln (Geocoding)
+async function geocode(address) {
+  const url = `https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(address)}&size=1`;
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Geocoding fehlgeschlagen");
+
+  const data = await response.json();
+  if (data.features.length === 0) throw new Error("Adresse nicht gefunden");
+
+  const coords = data.features[0].geometry.coordinates; // [lng, lat]
+  return [coords[1], coords[0]]; // [lat, lng]
 }
 
-// === Route berechnen ===
-async function calculateRoute() {
-  const startInput = document.getElementById("start").value.trim();
-  const zielInput = document.getElementById("ziel").value.trim();
+// Route berechnen und anzeigen
+async function route() {
+  const startAddr = document.getElementById("start").value;
+  const endAddr = document.getElementById("end").value;
 
-  if (!startInput || !zielInput) {
+  if (!startAddr || !endAddr) {
     alert("Bitte Start- und Zieladresse eingeben.");
     return;
   }
 
   try {
-    startCoords = await geocode(startInput);
-    zielCoords = await geocode(zielInput);
+    const start = await geocode(startAddr);
+    const end = await geocode(endAddr);
 
+    const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
     const body = {
       coordinates: [
-        [startCoords.lon, startCoords.lat],
-        [zielCoords.lon, zielCoords.lat]
+        [start[1], start[0]],
+        [end[1], end[0]]
       ],
-      profile: "driving-car",
-      format: "geojson",
       options: {
-        avoid_features: ["highways", "motorway", "trunk"]
+        avoid_features: ["highways", "motorways"]
       }
     };
 
-    const res = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": ORS_API_KEY
+        "Authorization": apiKey,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
 
-    if (!res.ok) throw new Error("Routing fehlgeschlagen: " + res.status);
+    if (!response.ok) throw new Error(`ORS Fehler: ${response.status}`);
 
-    const json = await res.json();
+    const json = await response.json();
+
+    if (!json.features || json.features.length === 0) {
+      throw new Error("Keine Route gefunden");
+    }
 
     if (routeLayer) map.removeLayer(routeLayer);
-    routeLayer = L.geoJSON(json, { style: { color: "blue", weight: 4 } }).addTo(map);
+
+    routeLayer = L.geoJSON(json, {
+      style: { color: "blue", weight: 4 }
+    }).addTo(map);
+
     map.fitBounds(routeLayer.getBounds());
 
   } catch (err) {
     alert("Route fehlgeschlagen: " + err.message);
+    console.error(err);
   }
 }
-
-// === Mein Standort ===
-document.getElementById("myloc").addEventListener("click", () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude, longitude } = pos.coords;
-      startCoords = { lat: latitude, lon: longitude };
-      document.getElementById("start").value = "Mein Standort";
-      L.marker([latitude, longitude]).addTo(map).bindPopup("Mein Standort").openPopup();
-    }, err => {
-      alert("Standort nicht verfügbar: " + err.message);
-    });
-  } else {
-    alert("Geolocation wird nicht unterstützt.");
-  }
-});
-
-// === Button-Listener ===
-document.getElementById("routeBtn").addEventListener("click", calculateRoute);
