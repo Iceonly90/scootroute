@@ -1,4 +1,4 @@
-const apiKey = "5b3ce3597851110001cf6248"; // <-- deinen ORS Key hier einfügen
+const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImJkNTQ1MjVjMzYxNDQ3Y2ZhNzVhZWE5NWY5MDZhNDFhIiwiaCI6Im11cm11cjY0In0="; // <-- deinen ORS Key hier einfügen
 let map = L.map("map").setView([51.2277, 6.7735], 13);
 
 // Hintergrundkarte (OpenStreetMap)
