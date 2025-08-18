@@ -1,73 +1,21 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScootRoute</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        .controls {
-            background: #f5f5f5;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .controls input {
-            padding: 5px;
-            margin: 5px 0;
-            width: calc(100% - 12px);
-            box-sizing: border-box;
-        }
-        .controls button {
-            padding: 5px 10px;
-            margin-top: 5px;
-            cursor: pointer;
-        }
-        .suggestions {
-            border: 1px solid #ccc;
-            background: white;
-            position: absolute;
-            z-index: 2000;
-            width: calc(100% - 22px);
-            box-sizing: border-box;
-        }
-        .suggestion-item {
-            padding: 5px;
-            cursor: pointer;
-        }
-        .suggestion-item:hover {
-            background: #eee;
-        }
-        #map {
-            flex: 1;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>ScootRoute</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-
-<div class="controls">
-    <div>
-        <input id="start" type="text" placeholder="Startadresse eingeben">
-        <button id="myLocation">Mein Standort</button>
-        <div id="start-suggestions" class="suggestions"></div>
-    </div>
-    <div>
-        <input id="end" type="text" placeholder="Zieladresse eingeben">
-        <div id="end-suggestions" class="suggestions"></div>
-    </div>
+  <div id="controls">
+    <input type="text" id="start" placeholder="Startadresse eingeben">
+    <input type="text" id="ziel" placeholder="Zieladresse eingeben">
+    <button id="myloc">Mein Standort</button>
     <button id="routeBtn">Route berechnen</button>
-</div>
+  </div>
+  <div id="map"></div>
 
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="script.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
