@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>ScootRoute</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
-    #map { height: 80vh; width: 100%; }
+    #map { height: 90vh; }
     #controls { padding: 10px; background: #f4f4f4; }
     input { padding: 5px; margin: 5px; width: 250px; }
-    button { padding: 6px 12px; margin: 5px; }
+    button { padding: 6px 10px; }
   </style>
 </head>
 <body>
   <div id="controls">
-    <input type="text" id="start" placeholder="Startadresse (z.B. Düsseldorf)">
-    <input type="text" id="end" placeholder="Zieladresse (z.B. Köln)">
-    <button onclick="route()">Route berechnen</button>
+    <input type="text" id="start" placeholder="Startadresse eingeben">
+    <input type="text" id="end" placeholder="Zieladresse eingeben">
+    <button onclick="calculateRoute()">Route berechnen</button>
   </div>
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

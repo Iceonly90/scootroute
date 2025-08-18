@@ -1,79 +1,54 @@
-const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImJkNTQ1MjVjMzYxNDQ3Y2ZhNzVhZWE5NWY5MDZhNDFhIiwiaCI6Im11cm11cjY0In0="; // <-- deinen ORS Key hier einfügen
-let map = L.map("map").setView([51.2277, 6.7735], 13);
+const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImJkNTQ1MjVjMzYxNDQ3Y2ZhNzVhZWE5NWY5MDZhNDFhIiwiaCI6Im11cm11cjY0In0="; // <-- hier deinen ORS API Key eintragen
+let map = L.map('map').setView([51.2277, 6.7735], 13);
 
-// Hintergrundkarte (OpenStreetMap)
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap-Mitwirkende"
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
 let routeLayer;
 
-// Adresse in Koordinaten umwandeln (Geocoding)
 async function geocode(address) {
-  const url = `https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(address)}&size=1`;
-
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Geocoding fehlgeschlagen");
-
-  const data = await response.json();
-  if (data.features.length === 0) throw new Error("Adresse nicht gefunden");
-
-  const coords = data.features[0].geometry.coordinates; // [lng, lat]
-  return [coords[1], coords[0]]; // [lat, lng]
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.length === 0) throw new Error("Adresse nicht gefunden: " + address);
+  return [parseFloat(data[0].lon), parseFloat(data[0].lat)]; // lon, lat !
 }
 
-// Route berechnen und anzeigen
-async function route() {
-  const startAddr = document.getElementById("start").value;
-  const endAddr = document.getElementById("end").value;
-
-  if (!startAddr || !endAddr) {
-    alert("Bitte Start- und Zieladresse eingeben.");
-    return;
-  }
-
+async function calculateRoute() {
   try {
+    const startAddr = document.getElementById("start").value.trim();
+    const endAddr = document.getElementById("end").value.trim();
+
+    if (!startAddr || !endAddr) {
+      alert("Bitte Start- und Zieladresse eingeben.");
+      return;
+    }
+
     const start = await geocode(startAddr);
     const end = await geocode(endAddr);
 
-    const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
-    const body = {
-      coordinates: [
-        [start[1], start[0]],
-        [end[1], end[0]]
-      ],
-      options: {
-        avoid_features: ["highways", "motorways"]
-      }
-    };
+    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`;
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Authorization": apiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("ORS Fehler: " + res.status);
 
-    if (!response.ok) throw new Error(`ORS Fehler: ${response.status}`);
+    const json = await res.json();
 
-    const json = await response.json();
-
-    if (!json.features || json.features.length === 0) {
-      throw new Error("Keine Route gefunden");
+    if (!json.routes || json.routes.length === 0) {
+      alert("Keine Route gefunden.");
+      return;
     }
+
+    const coords = json.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); // lat, lon für Leaflet
 
     if (routeLayer) map.removeLayer(routeLayer);
 
-    routeLayer = L.geoJSON(json, {
-      style: { color: "blue", weight: 4 }
-    }).addTo(map);
-
+    routeLayer = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
     map.fitBounds(routeLayer.getBounds());
 
   } catch (err) {
-    alert("Route fehlgeschlagen: " + err.message);
     console.error(err);
+    alert("Route fehlgeschlagen: " + err.message);
   }
 }
